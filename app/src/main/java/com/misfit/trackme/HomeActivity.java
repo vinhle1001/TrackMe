@@ -9,6 +9,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.misfit.trackme.helper.PermissionDefine;
+import com.misfit.trackme.helper.PermissionHelper;
 
 public class HomeActivity extends AppCompatActivity
 {
@@ -23,6 +25,10 @@ public class HomeActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(mOnMapReadyCallback);
+
+        PermissionHelper.requestPermission(this,
+                PermissionDefine.ACCESS_FINE_LOCATION.getPermission(),
+                PermissionDefine.ACCESS_FINE_LOCATION.getRequestCode());
     }
 
     private OnMapReadyCallback mOnMapReadyCallback = new OnMapReadyCallback()
