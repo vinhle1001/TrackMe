@@ -1,4 +1,4 @@
-package com.misfit.trackme.view;
+package com.misfit.trackme.ui.view;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

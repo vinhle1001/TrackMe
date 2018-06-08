@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.misfit.trackme.helper.DistanceHelper;
 import com.misfit.trackme.helper.LoggerHelper;
@@ -25,6 +26,10 @@ public class LocationService extends Service
 {
     static final String TAG = "LocationService";
     static final long NOTIFY_INTERVAL = 15 * 1000L;     // 15s
+
+    public static final String IntentFilter = "com.misfit.trackme.service.LocationService.REQUEST_SUCCESS";
+    public static final String Latitude = "com.misfit.trackme.service.LocationService.Latitude";
+    public static final String Longitude = "com.misfit.trackme.service.LocationService.Longitude";
 
     private LocationManager mLocationManager;
     private Location mLocation;
@@ -120,7 +125,8 @@ public class LocationService extends Service
             {
                 mLocation = null;
                 mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, new LocationListener());
-                if (mLocationManager != null){
+                if (mLocationManager != null)
+                {
                     mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     if (mLocation != null)
                     {
@@ -144,6 +150,11 @@ public class LocationService extends Service
         {
             distance = DistanceHelper.getDistanceFromLatLonInKm(location.getLatitude(), location.getLongitude(), mLatitude, mLongitude);
         }
+        Intent intent = new Intent(IntentFilter);
+        intent.putExtra(Latitude, location.getLatitude());
+        intent.putExtra(Longitude, location.getLongitude());
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+
         LoggerHelper.d(TAG, "Location updated on " + (new Date().toString()) +
                 " with Latitude is " + location.getLatitude() +
                 ", Longitude is " + location.getLongitude() +

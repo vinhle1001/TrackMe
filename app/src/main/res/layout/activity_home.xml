@@ -4,19 +4,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.misfit.trackme.view.ControllerView
+    <com.misfit.trackme.ui.view.ControllerView
         android:id="@+id/controller_view"
         android:layout_width="match_parent"
         android:layout_height="@dimen/controller_height"
         android:layout_alignParentBottom="true" />
 
-    <fragment 
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
+    <FrameLayout
+        android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/controller_view"
-        tools:context=".HomeActivity" />
+        android:layout_above="@+id/controller_view" />
 
 </RelativeLayout>

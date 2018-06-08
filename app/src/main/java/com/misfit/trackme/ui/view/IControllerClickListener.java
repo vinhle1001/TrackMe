@@ -1,4 +1,4 @@
-package com.misfit.trackme.view;
+package com.misfit.trackme.ui.view;
 
 /**
  * Created by VinhLe on Jun, 2018.

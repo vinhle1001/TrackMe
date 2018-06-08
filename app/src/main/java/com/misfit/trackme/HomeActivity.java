@@ -4,49 +4,31 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.misfit.trackme.helper.PermissionDefine;
 import com.misfit.trackme.helper.PermissionHelper;
 import com.misfit.trackme.service.LocationService;
+import com.misfit.trackme.ui.fragment.MapFragment;
 
 public class HomeActivity extends AppCompatActivity
 {
-    private GoogleMap mGoogleMap;
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(mOnMapReadyCallback);
-
-        PermissionHelper.requestPermission(this,
-                PermissionDefine.ACCESS_FINE_LOCATION.getPermission(),
-                PermissionDefine.ACCESS_FINE_LOCATION.getRequestCode());
+        PermissionHelper.requestPermission(this, PermissionDefine.ACCESS_FINE_LOCATION.getPermission(), PermissionDefine.ACCESS_FINE_LOCATION.getRequestCode());
+        PermissionHelper.requestPermission(this, PermissionDefine.ACCESS_COARSE_LOCATION.getPermission(), PermissionDefine.ACCESS_COARSE_LOCATION.getRequestCode());
 
         Intent serviceIntent = new Intent(this, LocationService.class);
         startService(serviceIntent);
     }
 
-    private OnMapReadyCallback mOnMapReadyCallback = new OnMapReadyCallback()
+    @Override
+    protected void onStart()
     {
-        @Override
-        public void onMapReady(GoogleMap googleMap)
-        {
-            mGoogleMap = googleMap;
+        super.onStart();
 
-            // Add a marker in Sydney, Australia, and move the camera.
-            LatLng sydney = new LatLng(-34, 151);
-            mGoogleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-        }
-    };
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, new MapFragment()).commit();
+    }
 }

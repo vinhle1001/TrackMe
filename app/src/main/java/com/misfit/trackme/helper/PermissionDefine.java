@@ -8,7 +8,8 @@ import android.Manifest;
 public enum PermissionDefine
 {
     // Permissions
-    ACCESS_FINE_LOCATION(Manifest.permission.ACCESS_FINE_LOCATION, 0x123);
+    ACCESS_FINE_LOCATION(Manifest.permission.ACCESS_FINE_LOCATION, 0x123),
+    ACCESS_COARSE_LOCATION(Manifest.permission.ACCESS_COARSE_LOCATION, 0x124);
 
 
     final String mPermission;
