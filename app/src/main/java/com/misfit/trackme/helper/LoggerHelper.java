@@ -3,7 +3,7 @@ package com.misfit.trackme.helper;
 /**
  * Created by VinhLe on Jun, 2018.
  */
-public class LoggerHelper
+public final class LoggerHelper
 {
 
     static boolean IS_DEBUG = true;

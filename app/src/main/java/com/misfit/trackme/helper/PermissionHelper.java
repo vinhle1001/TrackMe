@@ -13,7 +13,6 @@ import android.support.v4.content.ContextCompat;
  */
 public final class PermissionHelper
 {
-
     /**
      * @param context
      * @param permission
@@ -27,7 +26,7 @@ public final class PermissionHelper
             return false;
         }
 
-        return ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED;
+        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.misfit.trackme;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -11,6 +12,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.misfit.trackme.helper.PermissionDefine;
 import com.misfit.trackme.helper.PermissionHelper;
+import com.misfit.trackme.service.LocationService;
 
 public class HomeActivity extends AppCompatActivity
 {
@@ -29,6 +31,9 @@ public class HomeActivity extends AppCompatActivity
         PermissionHelper.requestPermission(this,
                 PermissionDefine.ACCESS_FINE_LOCATION.getPermission(),
                 PermissionDefine.ACCESS_FINE_LOCATION.getRequestCode());
+
+        Intent serviceIntent = new Intent(this, LocationService.class);
+        startService(serviceIntent);
     }
 
     private OnMapReadyCallback mOnMapReadyCallback = new OnMapReadyCallback()
