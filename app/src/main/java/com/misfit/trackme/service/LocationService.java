@@ -11,9 +11,12 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 
+import com.misfit.trackme.database.AppData;
+import com.misfit.trackme.database.dto.LocationDto;
 import com.misfit.trackme.helper.DistanceHelper;
 import com.misfit.trackme.helper.LoggerHelper;
 import com.misfit.trackme.helper.PermissionHelper;
+import com.misfit.trackme.ui.fragment.MapFragment;
 
 import java.util.Date;
 import java.util.Timer;
@@ -28,8 +31,6 @@ public class LocationService extends Service
     static final long NOTIFY_INTERVAL = 15 * 1000L;     // 15s
 
     public static final String IntentFilter = "com.misfit.trackme.service.LocationService.REQUEST_SUCCESS";
-    public static final String Latitude = "com.misfit.trackme.service.LocationService.Latitude";
-    public static final String Longitude = "com.misfit.trackme.service.LocationService.Longitude";
 
     private LocationManager mLocationManager;
     private Location mLocation;
@@ -39,10 +40,24 @@ public class LocationService extends Service
     private double mLatitude = -1;
     private double mLongitude = -1;
 
+    private int mSessionId = -1;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         LoggerHelper.d(TAG, "OnStartCommand");
+
+        if (intent != null)
+        {
+            mSessionId = intent.getIntExtra(MapFragment.SESSION_ID_KEY, 0);
+        }
+
+        if (mSessionId > 0)
+        {
+            mTimer = new Timer();
+            mTimer.schedule(new TimerTaskToGetLocation(), 0, NOTIFY_INTERVAL);
+        }
+
         return START_NOT_STICKY;
     }
 
@@ -51,9 +66,6 @@ public class LocationService extends Service
     {
         super.onCreate();
         LoggerHelper.d(TAG, "OnCreate");
-
-        mTimer = new Timer();
-        mTimer.schedule(new TimerTaskToGetLocation(), 0, NOTIFY_INTERVAL);
     }
 
     @Nullable
@@ -67,7 +79,8 @@ public class LocationService extends Service
     public void onTaskRemoved(Intent rootIntent)
     {
         LoggerHelper.d(TAG, "onTaskRemoved");
-        forceStop();
+//        forceStop();
+//        requestLocation();
         super.onTaskRemoved(rootIntent);
     }
 
@@ -76,6 +89,7 @@ public class LocationService extends Service
     {
         LoggerHelper.d(TAG, "onDestroy");
         forceStop();
+        requestLocation();
         super.onDestroy();
     }
 
@@ -150,37 +164,38 @@ public class LocationService extends Service
         {
             distance = DistanceHelper.getDistanceFromLatLonInKm(location.getLatitude(), location.getLongitude(), mLatitude, mLongitude);
         }
-        Intent intent = new Intent(IntentFilter);
-        intent.putExtra(Latitude, location.getLatitude());
-        intent.putExtra(Longitude, location.getLongitude());
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        insertLocation(mSessionId, location.getLatitude(), location.getLongitude(), distance);
+    }
 
-        LoggerHelper.d(TAG, "Location updated on " + (new Date().toString()) +
-                " with Latitude is " + location.getLatitude() +
-                ", Longitude is " + location.getLongitude() +
-                ", walk around: " + distance);
+    private void sendBroadcast()
+    {
+        Intent intent = new Intent(IntentFilter);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+    }
+
+    private void requestLocation()
+    {
+        mHandler.post(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                getCurrentLocation();
+            }
+        });
     }
 
     private class TimerTaskToGetLocation extends TimerTask
     {
-
         @Override
         public void run()
         {
-            mHandler.post(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    getCurrentLocation();
-                }
-            });
+            requestLocation();
         }
     }
 
     private class LocationListener implements android.location.LocationListener
     {
-
         @Override
         public void onLocationChanged(Location location)
         {
@@ -204,5 +219,30 @@ public class LocationService extends Service
         {
             LoggerHelper.d(TAG, "onProviderDisabled with " + provider);
         }
+    }
+
+    private void insertLocation(final int sessionId, final double latitude, final double longitude, final double distance)
+    {
+        Thread insertThread = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                LocationDto locationDto = new LocationDto();
+                locationDto.setSessionId(sessionId);
+                locationDto.setLatitude(latitude);
+                locationDto.setLongitude(longitude);
+                locationDto.setIsStarted(distance == -1 ? 1 : 0);
+                locationDto.setSpeed(distance == -1 ? 0 : distance * 1000 / NOTIFY_INTERVAL);
+                locationDto.setCreatedTime((new Date().getTime()));
+
+                AppData.getInstance(getApplicationContext()).locationDao().insert(locationDto);
+
+                sendBroadcast();
+                LoggerHelper.d(TAG, "insertLocation successful");
+            }
+        });
+
+        insertThread.start();
     }
 }

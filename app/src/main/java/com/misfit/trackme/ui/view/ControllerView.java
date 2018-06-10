@@ -96,7 +96,7 @@ public class ControllerView extends FrameLayout
         @Override
         public void onClick(View v)
         {
-            if (mControllerClickListener != null)
+            if (mControllerClickListener == null)
             {
                 // Nothings
             }

@@ -5,6 +5,8 @@ import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 
+import com.misfit.trackme.database.dao.LocationDao;
+import com.misfit.trackme.database.dao.SessionDao;
 import com.misfit.trackme.database.dto.LocationDto;
 import com.misfit.trackme.database.dto.SessionDto;
 
@@ -35,5 +37,7 @@ public abstract class AppData extends RoomDatabase
                 DB_NAME).build();
     }
 
-
+    // Daos
+    public abstract LocationDao locationDao();
+    public abstract SessionDao sessionDao();
 }

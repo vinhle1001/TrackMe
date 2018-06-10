@@ -6,8 +6,8 @@
 
     <ImageButton
         android:id="@+id/btn_record"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/button_width"
+        android:layout_height="@dimen/button_height"
         android:layout_centerInParent="true"
         android:background="@android:color/transparent"
         android:src="@drawable/ic_record"
@@ -15,8 +15,8 @@
 
     <ImageButton
         android:id="@+id/btn_pause"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/button_width"
+        android:layout_height="@dimen/button_height"
         android:layout_centerInParent="true"
         android:background="@android:color/transparent"
         android:src="@drawable/ic_pause_black"
@@ -26,20 +26,19 @@
         android:id="@+id/stop_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:visibility="gone">
+        android:layout_centerInParent="true" >
 
         <ImageButton
             android:id="@+id/btn_resume"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/button_width"
+            android:layout_height="@dimen/button_height"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_refresh_black" />
 
         <ImageButton
             android:id="@+id/btn_stop"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/button_width"
+            android:layout_height="@dimen/button_height"
             android:layout_marginLeft="8dp"
             android:layout_toRightOf="@id/btn_resume"
             android:background="@android:color/transparent"

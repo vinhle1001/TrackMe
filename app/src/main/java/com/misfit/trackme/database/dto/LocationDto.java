@@ -16,13 +16,13 @@ public class LocationDto
     private long mId;
 
     @ColumnInfo(name = "is_started")
-    private int mIsStarted;
+    private int mIsStarted; // 1: started, 0: none
 
     @ColumnInfo(name = "latitude")
-    private String mLatitude;
+    private double mLatitude;
 
     @ColumnInfo(name = "longitude")
-    private String mLongitude;
+    private double mLongitude;
 
     @ColumnInfo(name = "distance")
     private double mDistance;
@@ -55,22 +55,22 @@ public class LocationDto
         this.mIsStarted = isStarted;
     }
 
-    public String getLatitude()
+    public double getLatitude()
     {
         return mLatitude;
     }
 
-    public void setLatitude(String latitude)
+    public void setLatitude(double latitude)
     {
         this.mLatitude = latitude;
     }
 
-    public String getLongitude()
+    public double getLongitude()
     {
         return mLongitude;
     }
 
-    public void setLongitude(String longitude)
+    public void setLongitude(double longitude)
     {
         this.mLongitude = longitude;
     }

@@ -6,38 +6,109 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.misfit.trackme.R;
+import com.misfit.trackme.database.dto.LocationDto;
 import com.misfit.trackme.service.LocationService;
+import com.misfit.trackme.ui.viewmodels.IMapFragmentViewModel;
+import com.misfit.trackme.ui.viewmodels.MapFragmentViewModel;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import rx.Subscriber;
 
 /**
  * Created by VinhLe on Jun, 2018.
  */
-public class MapFragment extends SupportMapFragment
+public class MapFragment extends Fragment
 {
+    private static final String TAG = "MapFragment";
+    public static final String SESSION_ID_KEY = "SESSION_ID_KEY";
 
+    private View mRootView;
+    private SupportMapFragment mSupportMapFragment;
     private GoogleMap mGoogleMap;
+    private TextView mTVDistance;
+    private TextView mTVSpeed;
+    private TextView mTVTimer;
+
+    private LinkedList<LocationDto> mListLocation = new LinkedList<LocationDto>();
     private LatLng mLastLatLng;
+    private Marker mLastMarker;
+    private Handler mHandler = new Handler();
+    private int mSessionId;
+
+    private IMapFragmentViewModel mIMapFragmentViewModel;
+    private IMapFragmentViewModel getMapFragmentViewModel()
+    {
+        if (mIMapFragmentViewModel == null)
+        {
+            mIMapFragmentViewModel = new MapFragmentViewModel(getActivity());
+        }
+        return mIMapFragmentViewModel;
+    }
 
     @Override
     public void onCreate(Bundle bundle)
     {
         super.onCreate(bundle);
+    }
 
-        getMapAsync(mOnMapReadyCallback);
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
+        mRootView = inflater.inflate(R.layout.fragment_map, container, false);
+
+        mTVDistance = mRootView.findViewById(R.id.text_distance);
+        mTVSpeed = mRootView.findViewById(R.id.text_speed);
+        mTVTimer = mRootView.findViewById(R.id.text_timer);
+
+        return mRootView;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle bundle)
+    {
+        super.onActivityCreated(bundle);
+
+        mSupportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        mSupportMapFragment.getMapAsync(mOnMapReadyCallback);
+
+        if (bundle == null)
+        {
+            mSessionId = getArguments().getInt(SESSION_ID_KEY);
+            startLocationService(mSessionId);
+        }
+        else
+        {
+            mSessionId = bundle.getInt(SESSION_ID_KEY);
+        }
     }
 
     @Override
     public void onResume()
     {
         super.onResume();
+        getMapFragmentViewModel().getLocations(getOnSubscriber(), mSessionId);
         // Register broadcast
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(
                 mLocationReceiver,
@@ -46,26 +117,44 @@ public class MapFragment extends SupportMapFragment
     }
 
     @Override
+    public void onSaveInstanceState(Bundle bundle)
+    {
+        if (bundle != null)
+        {
+            bundle.putInt(SESSION_ID_KEY, mSessionId);
+        }
+        super.onSaveInstanceState(bundle);
+    }
+
+    @Override
     public void onPause()
     {
         super.onPause();
+        mListLocation.clear();
+        mGoogleMap.clear();
         // Unregister broadcast
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mLocationReceiver);
     }
 
-    private void moveTo(double latitude, double longitude)
+    private void moveTo(double latitude, double longitude, boolean isStart)
     {
         if (mGoogleMap != null)
         {
             LatLng position = new LatLng(latitude, longitude);
 
-            if (mLastLatLng == null)
+            if (isStart)
             {
-                mGoogleMap.addMarker(new MarkerOptions().position(position).title("You're in here!"));
+                mGoogleMap.addMarker(new MarkerOptions().position(position).title("You started here!"));
+                mLastMarker = null;
             }
             else
             {
                 mGoogleMap.addPolyline(new PolylineOptions().add(mLastLatLng, position).width(5).color(Color.RED));
+                if (mLastMarker != null)
+                {
+                    mLastMarker.remove();
+                }
+                mLastMarker = mGoogleMap.addMarker(new MarkerOptions().position(position).title("You're in here!"));
             }
             mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(position));
             mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 18.0f));
@@ -87,10 +176,93 @@ public class MapFragment extends SupportMapFragment
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            double latitude = intent.getDoubleExtra(LocationService.Latitude, 0);
-            double longitude = intent.getDoubleExtra(LocationService.Longitude, 0);
-
-            moveTo(latitude, longitude);
+            getMapFragmentViewModel().getLocations(getOnSubscriber(), mSessionId);
         }
     };
+
+    public void startLocationService()
+    {
+        startLocationService(mSessionId);
+    }
+
+    public void startLocationService(int sessionId)
+    {
+        if (sessionId > 0 && getActivity() != null)
+        {
+            Intent serviceIntent = new Intent(getContext(), LocationService.class);
+            serviceIntent.putExtra(SESSION_ID_KEY, sessionId);
+            getActivity().startService(serviceIntent);
+
+            updateTimer();
+        }
+    }
+
+    public void stopLocationService()
+    {
+        if (getActivity() != null)
+        {
+            Intent serviceIntent = new Intent(getContext(), LocationService.class);
+            getActivity().stopService(serviceIntent);
+        }
+    }
+
+    private Subscriber getOnSubscriber()
+    {
+        return new Subscriber<List<LocationDto>>()
+        {
+            @Override
+            public void onCompleted()
+            {
+
+            }
+
+            @Override
+            public void onError(Throwable e)
+            {
+
+            }
+
+            @Override
+            public void onNext(List<LocationDto> dtos)
+            {
+                onUpdateLocations(dtos);
+            }
+        };
+    }
+
+    private void onUpdateLocations(List<LocationDto> dtos)
+    {
+        LinkedList<LocationDto> listNotDraw = new LinkedList();
+        double distance = 0;
+        double currentSpeed = 0;
+
+        for (LocationDto dto : dtos)
+        {
+            if (dto.getIsStarted() != 1)
+            {
+                distance += dto.getDistance();
+                currentSpeed = dto.getSpeed();
+            }
+
+            if (!mListLocation.contains(dto))
+            {
+                listNotDraw.add(dto);
+            }
+        }
+        mListLocation.clear();
+        mListLocation.addAll(dtos);
+        // draw
+        for (LocationDto dto : listNotDraw)
+        {
+            moveTo(dto.getLatitude(), dto.getLongitude(), dto.getIsStarted() == 1);
+        }
+
+        mTVDistance.setText(String.format("%.2f km", distance / 1000));
+        mTVSpeed.setText(String.format("%.2f km/h", currentSpeed * 3.6));
+    }
+
+    private void updateTimer()
+    {
+
+    }
 }

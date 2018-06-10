@@ -2,7 +2,11 @@ package com.misfit.trackme.database.dto;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by VinhLe on Jun, 2018.
@@ -29,6 +33,15 @@ public class SessionDto
 
     @ColumnInfo(name = "average_speed")
     private double mAverageSpeed;
+
+    @ColumnInfo(name = "duration_time")
+    private long mDurationTime;
+
+    @ColumnInfo(name = "distance")
+    private double mDistance;
+
+    @Ignore
+    private List<LocationDto> mListLocation;
 
     public long getId()
     {
@@ -88,5 +101,39 @@ public class SessionDto
     public void setAverageSpeed(double averageSpeed)
     {
         this.mAverageSpeed = averageSpeed;
+    }
+
+    public long getDurationTime()
+    {
+        return mDurationTime;
+    }
+
+    public void setDurationTime(long durationTime)
+    {
+        this.mDurationTime = durationTime;
+    }
+
+    public double getDistance()
+    {
+        return mDistance;
+    }
+
+    public void setDistance(double distance)
+    {
+        this.mDistance = distance;
+    }
+
+    public List<LocationDto> getListLocation()
+    {
+        if (mListLocation == null)
+        {
+            mListLocation = new LinkedList<>();
+        }
+        return mListLocation;
+    }
+
+    public void setListLocation(List<LocationDto> listLocation)
+    {
+        this.mListLocation = mListLocation;
     }
 }
