@@ -4,6 +4,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 
 import com.misfit.trackme.database.dto.SessionDto;
@@ -11,6 +12,7 @@ import com.misfit.trackme.helper.PermissionDefine;
 import com.misfit.trackme.helper.PermissionHelper;
 import com.misfit.trackme.ui.fragment.ListSessionFragment;
 import com.misfit.trackme.ui.fragment.MapFragment;
+import com.misfit.trackme.ui.view.ControllerState;
 import com.misfit.trackme.ui.view.ControllerView;
 import com.misfit.trackme.ui.view.IControllerClickListener;
 import com.misfit.trackme.ui.viewmodels.HomeActivityViewModel;
@@ -62,6 +64,17 @@ public class HomeActivity extends AppCompatActivity implements IControllerClickL
     protected void onStart()
     {
         super.onStart();
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event)
+    {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK &&
+                mControllerView != null && mControllerView.getSate() == ControllerState.RECORDING)
+        {
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
     }
 
     @Override

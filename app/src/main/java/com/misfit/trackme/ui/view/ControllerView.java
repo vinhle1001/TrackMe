@@ -124,4 +124,9 @@ public class ControllerView extends FrameLayout
             updateUI();
         }
     };
+
+    public ControllerState getSate()
+    {
+        return mSate;
+    }
 }
