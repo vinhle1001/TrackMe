@@ -26,10 +26,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.misfit.trackme.R;
 import com.misfit.trackme.database.dto.LocationDto;
+import com.misfit.trackme.helper.DateTimeHelper;
 import com.misfit.trackme.service.LocationService;
 import com.misfit.trackme.ui.viewmodels.IMapFragmentViewModel;
 import com.misfit.trackme.ui.viewmodels.MapFragmentViewModel;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -42,6 +44,9 @@ public class MapFragment extends Fragment
 {
     private static final String TAG = "MapFragment";
     public static final String SESSION_ID_KEY = "SESSION_ID_KEY";
+    public static final String TOTAL_MILLISECOND_KEY = "TOTAL_MILLISECOND_KEY";
+    public static final String TIME_START_KEY = "TIME_START_KEY";
+    public static final String IS_RECORDING_KEY = "IS_RECORDING_KEY";
 
     private View mRootView;
     private SupportMapFragment mSupportMapFragment;
@@ -55,6 +60,9 @@ public class MapFragment extends Fragment
     private Marker mLastMarker;
     private Handler mHandler = new Handler();
     private int mSessionId;
+    private long mTimeStarted = 0;
+    private long mTotalTime = 0;
+    private boolean mIsRecording = false;
 
     private IMapFragmentViewModel mIMapFragmentViewModel;
     private IMapFragmentViewModel getMapFragmentViewModel()
@@ -101,6 +109,9 @@ public class MapFragment extends Fragment
         else
         {
             mSessionId = bundle.getInt(SESSION_ID_KEY);
+            mTimeStarted = bundle.getLong(TIME_START_KEY);
+            mTotalTime = bundle.getLong(TOTAL_MILLISECOND_KEY);
+            mIsRecording = bundle.getBoolean(IS_RECORDING_KEY);
         }
     }
 
@@ -114,6 +125,10 @@ public class MapFragment extends Fragment
                 mLocationReceiver,
                 new IntentFilter(LocationService.IntentFilter)
         );
+        if (mIsRecording)
+        {
+            updateTimer();
+        }
     }
 
     @Override
@@ -122,6 +137,9 @@ public class MapFragment extends Fragment
         if (bundle != null)
         {
             bundle.putInt(SESSION_ID_KEY, mSessionId);
+            bundle.putLong(TIME_START_KEY, mTimeStarted);
+            bundle.putLong(TOTAL_MILLISECOND_KEY, mTotalTime);
+            bundle.putBoolean(IS_RECORDING_KEY, mIsRecording);
         }
         super.onSaveInstanceState(bundle);
     }
@@ -134,6 +152,7 @@ public class MapFragment extends Fragment
         mGoogleMap.clear();
         // Unregister broadcast
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mLocationReceiver);
+        mHandler.removeCallbacks(mUpdateTimerRunnable);
     }
 
     private void moveTo(double latitude, double longitude, boolean isStart)
@@ -189,6 +208,8 @@ public class MapFragment extends Fragment
     {
         if (sessionId > 0 && getActivity() != null)
         {
+            this.mIsRecording = true;
+            this.mTimeStarted = (new Date().getTime());
             Intent serviceIntent = new Intent(getContext(), LocationService.class);
             serviceIntent.putExtra(SESSION_ID_KEY, sessionId);
             getActivity().startService(serviceIntent);
@@ -203,6 +224,10 @@ public class MapFragment extends Fragment
         {
             Intent serviceIntent = new Intent(getContext(), LocationService.class);
             getActivity().stopService(serviceIntent);
+
+            mTotalTime += new Date().getTime() - mTimeStarted;
+            mHandler.removeCallbacks(mUpdateTimerRunnable);
+            this.mIsRecording = false;
         }
     }
 
@@ -263,6 +288,19 @@ public class MapFragment extends Fragment
 
     private void updateTimer()
     {
+        Date currentDate = new Date();
+        long duration = currentDate.getTime() - mTimeStarted + mTotalTime;
 
+        mTVTimer.setText(DateTimeHelper.parseStringToTime(duration));
+        mHandler.postDelayed(mUpdateTimerRunnable, 1000);
     }
+
+    private Runnable mUpdateTimerRunnable = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+            updateTimer();
+        }
+    };
 }

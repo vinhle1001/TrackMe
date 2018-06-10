@@ -4,4 +4,9 @@
     <string name="distance">Distance</string>
     <string name="speed">Speed</string>
     <string name="avg_speed">Avg Speed</string>
+
+    <!--Errors-->
+    <string name="err_dont_have_network">Network is not available!</string>
+    <string name="err_dont_have_permission">Permission location do not grant!</string>
+    <string name="err_dont_create_session">Session can not create!</string>
 </resources>

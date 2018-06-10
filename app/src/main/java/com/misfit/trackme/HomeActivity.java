@@ -1,8 +1,10 @@
 package com.misfit.trackme;
 
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 
 import com.misfit.trackme.database.dto.SessionDto;
 import com.misfit.trackme.helper.PermissionDefine;
@@ -21,7 +23,9 @@ import rx.Subscriber;
  */
 public class HomeActivity extends AppCompatActivity implements IControllerClickListener
 {
+    private View mRootView;
     private ControllerView mControllerView;
+
     private IHomeActivityViewModel mIHomeActivityViewModel;
     private IHomeActivityViewModel getHomeActivityViewModel()
     {
@@ -38,6 +42,7 @@ public class HomeActivity extends AppCompatActivity implements IControllerClickL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        mRootView = findViewById(R.id.root_view);
         mControllerView = (ControllerView) findViewById(R.id.controller_view);
         mControllerView.setControllerClickListener(this);
 
@@ -47,7 +52,7 @@ public class HomeActivity extends AppCompatActivity implements IControllerClickL
         if (savedInstanceState == null)
         {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, new ListSessionFragment())
+                    .replace(R.id.container, new ListSessionFragment(), ListSessionFragment.class.getName())
                     .addToBackStack(ListSessionFragment.class.getName())
                     .commit();
         }
@@ -62,7 +67,18 @@ public class HomeActivity extends AppCompatActivity implements IControllerClickL
     @Override
     public void onStartRecording()
     {
-        getHomeActivityViewModel().createSession(getOnSubscriber(Actions.CREATE_SESSION));
+        if (!PermissionHelper.checkNetworkAvailable(getApplicationContext()))
+        {
+            showSnackBar(R.string.err_dont_have_network);
+        }
+        else if (!PermissionHelper.checkPermission(getApplicationContext(), PermissionDefine.ACCESS_FINE_LOCATION.getPermission()))
+        {
+            showSnackBar(R.string.err_dont_have_permission);
+        }
+        else
+        {
+            getHomeActivityViewModel().createSession(getOnSubscriber(Actions.CREATE_SESSION));
+        }
     }
 
     @Override
@@ -124,7 +140,7 @@ public class HomeActivity extends AppCompatActivity implements IControllerClickL
             @Override
             public void onError(Throwable e)
             {
-
+                showSnackBar(R.string.err_dont_create_session);
             }
 
             @Override
@@ -135,7 +151,7 @@ public class HomeActivity extends AppCompatActivity implements IControllerClickL
                     case CREATE_SESSION:
                         SessionDto sessionDto = (SessionDto) o;
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.container, createMapFragment(((Long) sessionDto.getId()).intValue()))
+                                .replace(R.id.container, createMapFragment(((Long) sessionDto.getId()).intValue()), MapFragment.class.getName())
                                 .addToBackStack(MapFragment.class.getName())
                                 .commit();
                         break;
@@ -148,5 +164,13 @@ public class HomeActivity extends AppCompatActivity implements IControllerClickL
     private enum Actions
     {
         CREATE_SESSION
+    }
+
+    private void showSnackBar(int stringRes)
+    {
+        if (mRootView != null)
+        {
+            Snackbar.make(mRootView, stringRes, Snackbar.LENGTH_SHORT);
+        }
     }
 }

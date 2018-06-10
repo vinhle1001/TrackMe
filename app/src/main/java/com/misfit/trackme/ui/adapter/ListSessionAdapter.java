@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 import com.misfit.trackme.R;
 import com.misfit.trackme.database.dto.LocationDto;
 import com.misfit.trackme.database.dto.SessionDto;
+import com.misfit.trackme.helper.DateTimeHelper;
 
 import java.util.List;
 
@@ -43,7 +44,8 @@ public class ListSessionAdapter extends RecyclerView.Adapter<ListSessionAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position)
     {
-        SessionDto session = mSessions.get(position);
+        int displayPosition = getItemCount() - position - 1;
+        SessionDto session = mSessions.get(displayPosition);
 
         if (mContext != null)
         {
@@ -54,7 +56,7 @@ public class ListSessionAdapter extends RecyclerView.Adapter<ListSessionAdapter.
 
         holder.mTVDistance.setText(String.format("%.2f km", session.getDistance() / 1000));
         holder.mTVSpeed.setText(String.format("%.2f km/h", session.getAverageSpeed() * 3.6));
-//        holder.mTVDuration.setText(String.format("%.2f km", session.getDistance() / 1000));
+        holder.mTVDuration.setText(DateTimeHelper.parseStringToTime(session.getDurationTime()));
     }
 
     @Override
