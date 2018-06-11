@@ -28,7 +28,7 @@ import java.util.TimerTask;
 public class LocationService extends Service
 {
     static final String TAG = "LocationService";
-    static final long NOTIFY_INTERVAL = 15 * 1000L;     // 15s
+    static final long NOTIFY_INTERVAL = 10 * 1000L;     // 15s
 
     public static final String IntentFilter = "com.misfit.trackme.service.LocationService.REQUEST_SUCCESS";
 
