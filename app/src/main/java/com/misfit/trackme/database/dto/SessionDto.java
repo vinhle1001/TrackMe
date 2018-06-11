@@ -136,4 +136,13 @@ public class SessionDto
     {
         this.mListLocation = mListLocation;
     }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return obj != null &&
+                obj instanceof SessionDto &&
+                ((SessionDto) obj).getId() > 0 &&
+                ((SessionDto) obj).getId() == mId;
+    }
 }

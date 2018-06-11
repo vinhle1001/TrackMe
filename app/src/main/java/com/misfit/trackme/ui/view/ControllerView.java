@@ -102,8 +102,8 @@ public class ControllerView extends FrameLayout
             }
             else if (v.getId() == mIBStartRecording.getId())
             {
-                mControllerClickListener.onStartRecording();
-                mSate = ControllerState.RECORDING;
+                boolean result = mControllerClickListener.onStartRecording();
+                mSate = result ? ControllerState.RECORDING : mSate;
             }
             else if (v.getId() == mIBPauseRecording.getId())
             {

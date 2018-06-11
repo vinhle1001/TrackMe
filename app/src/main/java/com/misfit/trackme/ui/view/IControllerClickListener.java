@@ -6,7 +6,7 @@ package com.misfit.trackme.ui.view;
 public interface IControllerClickListener
 {
 
-    void onStartRecording();
+    boolean onStartRecording();
     void onPauseRecording();
     void onStopRecording();
     void onResumeRecording();

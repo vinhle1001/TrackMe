@@ -54,8 +54,8 @@ public class HomeActivity extends AppCompatActivity implements IControllerClickL
         if (savedInstanceState == null)
         {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, new ListSessionFragment(), ListSessionFragment.class.getName())
-                    .addToBackStack(ListSessionFragment.class.getName())
+                    .add(R.id.container, new ListSessionFragment(), ListSessionFragment.class.getName())
+//                    .addToBackStack(ListSessionFragment.class.getName())
                     .commit();
         }
     }
@@ -78,20 +78,23 @@ public class HomeActivity extends AppCompatActivity implements IControllerClickL
     }
 
     @Override
-    public void onStartRecording()
+    public boolean onStartRecording()
     {
         if (!PermissionHelper.checkNetworkAvailable(getApplicationContext()))
         {
             showSnackBar(R.string.err_dont_have_network);
+            return false;
         }
         else if (!PermissionHelper.checkPermission(getApplicationContext(), PermissionDefine.ACCESS_FINE_LOCATION.getPermission()))
         {
             showSnackBar(R.string.err_dont_have_permission);
+            return false;
         }
         else
         {
             getHomeActivityViewModel().createSession(getOnSubscriber(Actions.CREATE_SESSION));
         }
+        return true;
     }
 
     @Override
@@ -183,7 +186,7 @@ public class HomeActivity extends AppCompatActivity implements IControllerClickL
     {
         if (mRootView != null)
         {
-            Snackbar.make(mRootView, stringRes, Snackbar.LENGTH_SHORT);
+            Snackbar.make(mRootView, stringRes, Snackbar.LENGTH_SHORT).show();
         }
     }
 }

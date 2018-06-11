@@ -54,6 +54,7 @@ public class LocationService extends Service
 
         if (mSessionId > 0)
         {
+            requestLocation();
             mTimer = new Timer();
             mTimer.schedule(new TimerTaskToGetLocation(), 0, NOTIFY_INTERVAL);
         }

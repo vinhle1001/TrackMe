@@ -113,4 +113,13 @@ public class LocationDto
     public void setSessionId(long sessionId) {
         this.mSessionId = sessionId;
     }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return obj != null &&
+                obj instanceof LocationDto &&
+                ((LocationDto) obj).getId() > 0 &&
+                ((LocationDto) obj).getId() == mId;
+    }
 }

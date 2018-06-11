@@ -27,6 +27,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.misfit.trackme.R;
 import com.misfit.trackme.database.dto.LocationDto;
 import com.misfit.trackme.helper.DateTimeHelper;
+import com.misfit.trackme.helper.LoggerHelper;
 import com.misfit.trackme.service.LocationService;
 import com.misfit.trackme.ui.viewmodels.IMapFragmentViewModel;
 import com.misfit.trackme.ui.viewmodels.MapFragmentViewModel;
@@ -171,6 +172,7 @@ public class MapFragment extends Fragment
                 mGoogleMap.addPolyline(new PolylineOptions().add(mLastLatLng, position).width(5).color(Color.RED));
                 if (mLastMarker != null)
                 {
+                    LoggerHelper.d(TAG, "Marker has removed!");
                     mLastMarker.remove();
                 }
                 mLastMarker = mGoogleMap.addMarker(new MarkerOptions().position(position).title("You're in here!"));
